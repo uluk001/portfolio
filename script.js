@@ -70,65 +70,100 @@ document.addEventListener('DOMContentLoaded', () => {
 // Experience Switcher
 function setupExperienceSwitcher() {
     const experiences = {
-        mdigital: {
-            title: 'Backend Python Developer',
-            achievements: [
-                'Built catalog modules with auto-ingest from API and Excel files; the MMarket catalog offers 70,000+ SKUs.',
-                'Created and implemented internal SDKs for the payment gateway, simplifying integration and reducing payment-related errors across projects (including publishing payler-sdk on PyPI).',
-                'Introduced a Redis cache layer for catalog and pricing, reducing DB load and keeping product pages fast.',
-                'Improved full-text search in Elasticsearch with synonyms, typo tolerance, and text cleaning optimizations.',
-                'Consolidated service logs into a single ELK stack, speeding up error detection and analysis.',
-                'Set up DevOps infrastructure using Docker/Docker Swarm and GitLab CI/CD, enabling fast and predictable releases.'
-            ],
-            technologies: ['Python', 'FastAPI', 'PostgreSQL', 'Elasticsearch', 'Docker Swarm', 'GitLab CI/CD', 'Redis', 'Prometheus', 'Grafana', 'RabbitMQ']
-        },
         launchist: {
-            title: 'Backend Python Developer',
-            achievements: [
-                'Designed and implemented roles and permissions using Permify, centralizing and simplifying access control.',
-                'Implemented the outbox/inbox pattern with Kafka and DLQ, eliminating duplicate and lost events between services.',
-                'Split Celery tasks by priority and added locks, preventing delays of fast operations.',
-                'Developed asynchronous clients for Airtable, Slack, YouTrack, and WhatsApp APIs, reducing API response time on external calls by 30–40%.',
-                'Configured event handling in Kafka with idempotent keys, ensuring exactly-once processing.',
-                'Integrated digital document signing via API; approval time reduced from days to ~2–3 hours (median).',
-                'Optimized complex queries in Beanie and PostgreSQL (indexes, aggregations, partitioning), significantly accelerating reports and data retrieval.'
+            title: 'Software Engineer',
+            meta: 'Launchist LLC, Feb 2022 to Jul 2024, Remote',
+            projects: [
+                {
+                    name: 'Multi-tenant B2B SaaS Platform',
+                    context: 'Async FastAPI / Django backend: wallet, billing, integrations, RBAC, webhooks (GCP Cloud Run).',
+                    achievements: [
+                        'Built a Kafka outbox / inbox pipeline with idempotency and DLQ for reliable exactly-once event processing across services.',
+                        'Designed a multi-currency wallet ledger (MongoDB, Beanie) with double-entry logic and optimized schemas and queries across MongoDB and PostgreSQL.',
+                        'Implemented fine-grained multi-tenant RBAC (Permify) with permission checks integrated into FastAPI.',
+                        'Built async integrations (httpx) with Airtable, Slack, YouTrack and WhatsApp, cutting external API latency by 30 to 40%.',
+                        'Shipped a webhook-driven e-signature workflow with a state machine and retries that cut approval time from days to 2 to 3 hours (median).'
+                    ]
+                }
             ],
-            technologies: ['Python 3.10-3.11', 'FastAPI', 'Django', 'DRF', 'PostgreSQL', 'MongoDB (Beanie)', 'Redis', 'Kafka', 'Celery', 'Docker', 'GCP', 'asyncio', 'Pytest']
+            technologies: ['Python', 'FastAPI', 'Django / DRF', 'Kafka', 'Celery', 'MongoDB (Beanie)', 'PostgreSQL', 'Redis', 'Permify', 'httpx', 'GCP Cloud Run', 'Docker', 'PyTest']
         }
     };
-    
+
     const experienceItems = document.querySelectorAll('.experience-item');
     const positionTitle = document.querySelector('.position-title');
+    const positionMeta = document.querySelector('.position-meta');
     const achievementsContainer = document.querySelector('.experience-achievements');
     const techTags = document.querySelector('.tech-tags');
-    
-    experienceItems.forEach((item, index) => {
-        item.addEventListener('click', () => {
-            // Remove active class from all items
-            experienceItems.forEach(exp => exp.classList.remove('active'));
-            
-            // Add active class to clicked item
-            item.classList.add('active');
-            
-            // Update content based on which company was clicked
-            const company = index === 0 ? 'mdigital' : 'launchist';
-            const data = experiences[company];
-            
-            // Update title
-            positionTitle.textContent = data.title;
-            
-            // Update achievements
-            achievementsContainer.innerHTML = data.achievements.map(achievement => `
-                <div class="achievement-item">
-                    <div class="bullet-point"></div>
-                    <p>${achievement}</p>
-                </div>
-            `).join('');
-            
-            // Update technologies
-            techTags.innerHTML = data.technologies.map(tech => `
-                <span class="tech-tag">${tech}</span>
-            `).join('');
+
+    if (!positionTitle || !positionMeta || !achievementsContainer || !techTags) {
+        return;
+    }
+
+    const initiallyActiveItem = document.querySelector('.experience-item.active');
+    const staticCompany = initiallyActiveItem ? initiallyActiveItem.dataset.company : null;
+    const staticExperienceMarkup = {
+        title: positionTitle.textContent,
+        meta: positionMeta.textContent,
+        achievements: achievementsContainer.innerHTML,
+        technologies: techTags.innerHTML
+    };
+
+    function restoreStaticExperience() {
+        positionTitle.textContent = staticExperienceMarkup.title;
+        positionMeta.textContent = staticExperienceMarkup.meta;
+        achievementsContainer.innerHTML = staticExperienceMarkup.achievements;
+        techTags.innerHTML = staticExperienceMarkup.technologies;
+    }
+
+    function renderExperience(experience) {
+        positionTitle.textContent = experience.title;
+        positionMeta.textContent = experience.meta;
+
+        achievementsContainer.innerHTML = experience.projects.map(project => `
+            <div class="exp-project">
+                <h4 class="project-name">${project.name}</h4>
+                <p class="project-context">${project.context}</p>
+                ${project.achievements.map(achievement => `
+                    <div class="achievement-item">
+                        <div class="bullet-point"></div>
+                        <p>${achievement}</p>
+                    </div>
+                `).join('')}
+            </div>
+        `).join('');
+
+        techTags.innerHTML = experience.technologies.map(technology => `
+            <span class="tech-tag">${technology}</span>
+        `).join('');
+    }
+
+    function selectExperience(selectedItem) {
+        const company = selectedItem.dataset.company;
+        if (company !== staticCompany && !experiences[company]) {
+            return;
+        }
+
+        experienceItems.forEach(item => {
+            const isSelected = item === selectedItem;
+            item.classList.toggle('active', isSelected);
+            item.setAttribute('aria-selected', String(isSelected));
+        });
+
+        if (company === staticCompany) {
+            restoreStaticExperience();
+        } else {
+            renderExperience(experiences[company]);
+        }
+    }
+
+    experienceItems.forEach(item => {
+        item.addEventListener('click', () => selectExperience(item));
+        item.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                selectExperience(item);
+            }
         });
     });
 }

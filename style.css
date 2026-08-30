@@ -1379,3 +1379,51 @@ body {
         font-size: 0.85rem;
     }
 }
+
+/* Experience Projects */
+.experience-details .position-title {
+    margin-bottom: 0.4rem;
+}
+
+.position-meta {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+}
+
+.exp-project {
+    margin-bottom: 2.25rem;
+}
+
+.exp-project:last-child {
+    margin-bottom: 0;
+}
+
+.project-name {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.project-context {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+    padding-left: 0.9rem;
+    border-left: 2px solid var(--border-color);
+}
+
+.exp-project .achievement-item {
+    margin-bottom: 1rem;
+}
+
+.achievement-item p a {
+    color: var(--accent-green);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--accent-green-dim);
+}
+
+.achievement-item p a:hover {
+    border-bottom-style: solid;
+}
